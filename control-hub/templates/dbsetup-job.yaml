@@ -25,7 +25,7 @@ spec:
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
-      restartPolicy: Never
+      restartPolicy: OnFailure
       initContainers:
       - name: mysql-ready
         image: mysql
@@ -89,7 +89,7 @@ spec:
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
-      restartPolicy: Never
+      restartPolicy: OnFailure
       containers:
       - name: post-install-influx-setup
         image: appropriate/curl:latest
@@ -98,7 +98,7 @@ spec:
           - "/bin/sh"
           - "-c"
           - |
-             curl -m 10 -X POST {{ .Values.influxdb.proto }}://{{ template "influxdb.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:8086/query \
+             curl -v -m 10 -X POST {{ .Values.influxdb.proto }}://{{ template "influxdb.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:8086/query \
              --data-urlencode \
              "q=CREATE USER \"${INFLUXDB_USER}\" WITH PASSWORD '${INFLUXDB_PASSWORD}' WITH ALL PRIVILEGES"
         securityContext:
@@ -139,7 +139,7 @@ spec:
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
-      restartPolicy: Never
+      restartPolicy: OnFailure
       containers:
       - name: post-install-influx-setup-db
         image: appropriate/curl:latest
@@ -148,7 +148,7 @@ spec:
           - "/bin/sh"
           - "-c"
           - |
-             curl -m 10 -u"${INFLUXDB_USER}:${INFLUXDB_PASSWORD}" -X POST {{ .Values.influxdb.proto }}://{{ template "influxdb.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:8086/query \
+             curl -v -m 10 -u"${INFLUXDB_USER}:${INFLUXDB_PASSWORD}" -X POST {{ .Values.influxdb.proto }}://{{ template "influxdb.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:8086/query \
              --data-urlencode \
              "q=CREATE DATABASE ${DB_NAME}"
         securityContext:
@@ -192,7 +192,7 @@ spec:
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
-      restartPolicy: Never
+      restartPolicy: OnFailure
       containers:
       - name: post-install-influx-setup-app-db
         image: appropriate/curl:latest
@@ -201,7 +201,7 @@ spec:
           - "/bin/sh"
           - "-c"
           - |
-             curl -m 10 -u"${INFLUXDB_USER}:${INFLUXDB_PASSWORD}" -X POST {{ .Values.influxdb.proto }}://{{ template "influxdb.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:8086/query \
+             curl -v -m 10 -u"${INFLUXDB_USER}:${INFLUXDB_PASSWORD}" -X POST {{ .Values.influxdb.proto }}://{{ template "influxdb.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:8086/query \
              --data-urlencode \
              "q=CREATE DATABASE ${DB_NAME}"
         securityContext:

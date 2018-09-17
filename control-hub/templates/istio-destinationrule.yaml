@@ -2,9 +2,9 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: "{{ template "fullname" . }}-influxdb"
+  name: {{ template "influxdb.fullname" . }}
   labels:
-    app: "{{ template "name" . }}-influxdb"
+    app: influxdb
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
@@ -13,14 +13,18 @@ spec:
   host: "{{ .Release.Name }}-influxdb.{{ .Release.Namespace }}.svc.cluster.local"
   trafficPolicy:
     tls:
+      {{- if eq .Values.istio.mTLS "DISABLE" }}
       mode: DISABLE
+      {{ else }}
+      mode: ISTIO_MUTUAL
+      {{- end }}
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
   name: "{{ template "fullname" . }}-mysql"
   labels:
-    app: "{{ template "name" . }}-mysql"
+    app: mysql
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
@@ -30,24 +34,26 @@ spec:
   trafficPolicy:
     tls:
       mode: DISABLE
+{{- range $app := .Values.apps }}
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: {{ template "fullname" . }}
+  name: "{{ template "fullname" $ }}-{{ $app.name | replace "_" "-" }}"
   labels:
-    app: {{ template "name" . }}
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
-    namespace: {{ .Release.Namespace }}
+    app: {{ $app.name | quote }}
+    chart: {{ $.Chart.Name }}-{{ $.Chart.Version | replace "+" "_" }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
+    namespace: {{ $.Release.Namespace }}
 spec:
-  host: "*.{{ .Release.Namespace }}.svc.cluster.local"
+  host: "{{ template "fullname" $ }}-{{ $app.name | replace "_" "-" }}.{{ $.Release.Namespace }}.svc.cluster.local"
   trafficPolicy:
     tls:
-      {{- if eq .Values.istio.mTLS "DISABLE" }}
+      {{- if eq $.Values.istio.mTLS "DISABLE" }}
       mode: DISABLE
       {{ else }}
       mode: ISTIO_MUTUAL
       {{- end }}
+{{- end }}
 {{- end }}
