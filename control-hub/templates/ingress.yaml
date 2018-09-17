@@ -1,4 +1,4 @@
-{{- if .Values.ingress.enabled -}}
+{{- if (.Values.ingress.enabled) and not .Values.ingress.istio -}}
 {{- $serviceName := include "fullname" . -}}
 {{- $servicePort := .Values.service.port -}}
 {{- $adminPort := .Values.service.adminPort -}}
@@ -32,11 +32,8 @@ spec:
             serviceName: "{{ $serviceName }}-{{ $app.name | replace "_" "-" }}"
             servicePort: {{ $servicePort }}
         {{- end }}
-    - host: {{ .Values.ingress.adminHost }}.{{ .Values.ingress.domain }}
-      http:
-        paths:
-        - path: /
+        - path: /adminApp
           backend:
-            serviceName: "{{ $serviceName }}-security" # security app can host UI for now
+            serviceName: "{{ $serviceName }}-security"
             servicePort: {{ $adminPort }}
 {{- end -}}

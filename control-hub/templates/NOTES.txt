@@ -1,4 +1,3 @@
-DPM will be available at the following URLs:
+Control Hub will be available at the following URL:
 
-DPM       - {{ .Values.ingress.proto }}://{{ .Values.ingress.host }}.{{ .Values.ingress.domain }}
-Admin App - {{ .Values.ingress.proto }}://{{ .Values.ingress.adminHost }}.{{ .Values.ingress.domain }}
+Control Hub       - {{ .Values.ingress.proto }}://{{ .Values.ingress.host }}.{{ .Values.ingress.domain }}
