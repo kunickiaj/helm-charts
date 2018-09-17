@@ -1,0 +1,9 @@
+dependencies:
+- name: mysql
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 0.10.1
+- name: influxdb
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 0.11.0
+digest: sha256:bee0b18944e7d427270889055a70c5dbbe28b4f544e6a2ce972b89b678334a91
+generated: 2018-09-11T11:35:35.147494597-07:00

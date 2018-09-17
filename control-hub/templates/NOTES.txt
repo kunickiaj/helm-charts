@@ -1,0 +1,4 @@
+DPM will be available at the following URLs:
+
+DPM       - {{ .Values.ingress.proto }}://{{ .Values.ingress.host }}.{{ .Values.ingress.domain }}
+Admin App - {{ .Values.ingress.proto }}://{{ .Values.ingress.adminHost }}.{{ .Values.ingress.domain }}
