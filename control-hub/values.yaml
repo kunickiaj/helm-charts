@@ -1,11 +1,9 @@
 # Default values for Control Hub
-replicaCount: 1
 image:
   repository: streamsets/control-hub
   tag: latest
   pullPolicy: IfNotPresent
 service:
-  name: control-hub
   type: ClusterIP
   port: 18631
   adminPort: 18632
@@ -141,7 +139,7 @@ mysql:
   resources:
     requests:
       memory: 256Mi
-      cpu: 500m
+      cpu: 100m
   configurationFiles:
     mysql_dpm.cnf: |-
       [mysqld]
