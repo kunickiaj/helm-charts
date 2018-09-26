@@ -1,12 +1,13 @@
+{{- range $app := .Values.apps }}
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: "{{.Release.Name}}-initdb"
+  name: "{{$.Release.Name}}-init-{{ $app.name | replace "_" "-" }}-db"
   labels:
-    heritage: {{.Release.Service | quote }}
-    release: {{.Release.Name | quote }}
-    chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+    heritage: {{$.Release.Service | quote }}
+    release: {{$.Release.Name | quote }}
+    chart: "{{$.Chart.Name}}-{{$.Chart.Version}}"
   annotations:
     # This is what defines this resource as a hook. Without this line, the
     # job is considered part of the release.
@@ -17,11 +18,11 @@ spec:
   backoffLimit: 5
   template:
     metadata:
-      name: "{{.Release.Name}}-initdb"
+      name: "{{$.Release.Name}}-init-{{ $app.name | replace "_" "-" }}-db"
       labels:
-        heritage: {{.Release.Service | quote }}
-        release: {{.Release.Name | quote }}
-        chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+        heritage: {{$.Release.Service | quote }}
+        release: {{$.Release.Name | quote }}
+        chart: "{{$.Chart.Name}}-{{$.Chart.Version}}"
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
@@ -35,33 +36,36 @@ spec:
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mysql.fullname" . }}
+              name: {{ template "mysql.fullname" $ }}
               key: mysql-root-password
         - name: DB_HOST
-          value: "{{ template "mysql.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local"
+          value: "{{ template "mysql.fullname" $ }}.{{ $.Release.Namespace }}.svc.cluster.local"
         - name: DB_PORT
           value: "3306"
         command: ['sh', '-c', 'mysql -w --connect-timeout=5 -s -N -h"${DB_HOST}" -P"${DB_PORT}" -u"${DB_USER}" -p"${DB_PASSWORD}" -e "SELECT USER()"']
       containers:
       - name: post-install-db-setup
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        args: ["initdb"]
+        image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+        imagePullPolicy: {{ $.Values.image.pullPolicy }}
+        args: ["dpmcli", "{{ $app.name }}", "buildSchema", "--debug"]
         securityContext:
           runAsNonRoot: true
           runAsUser: 500
         env:
+        - name: DPM_CONF_APPS_TO_START
+          value: "{{ $app.name }} security"
         - name: DB_USER
           value: "root"
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mysql.fullname" . }}
+              name: {{ template "mysql.fullname" $ }}
               key: mysql-root-password
         - name: DB_HOST
-          value: "{{ template "mysql.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local"
+          value: "{{ template "mysql.fullname" $ }}.{{ $.Release.Namespace }}.svc.cluster.local"
         - name: DB_PORT
           value: "3306"
+{{- end }}
 ---
 apiVersion: batch/v1
 kind: Job
